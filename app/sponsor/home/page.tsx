@@ -22,7 +22,7 @@ export default function SponsorHomePage() {
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-lg">SL</span>
                         </div>
-                        <span className="text-xl font-bold text-gray-900">Sponsorlink</span>
+                        <span className="text-xl font-bold text-gray-900">Sponsorlink-spo</span>
                     </div>
 
                     {/* User Menu */}
@@ -65,7 +65,7 @@ export default function SponsorHomePage() {
                     </Card>
                     <Card className="text-center">
                         <div className="text-4xl font-bold text-purple-600 mb-2">0</div>
-                        <p className="text-gray-600">Interests Expressed</p>
+                        <p className="text-gray-600">Prospects</p>
                     </Card>
                 </div>
 
