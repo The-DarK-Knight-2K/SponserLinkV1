@@ -29,6 +29,8 @@ export default clerkMiddleware(async (auth, req) => {
         await auth.protect()
     }
 
+    console.log(`Middleware: ${req.nextUrl.pathname} | userId: ${userId ? 'PRESENT' : 'NULL'}`)
+
     return NextResponse.next()
 })
 

@@ -1,7 +1,7 @@
 // app/login/page.tsx
 'use client'
 
-import { useSignIn } from '@clerk/nextjs'
+import { useSignIn, useClerk } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
@@ -11,7 +11,8 @@ import Link from 'next/link'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 export default function LoginPage() {
-    const { signIn, isLoaded } = useSignIn()
+    const { signIn, isLoaded, setActive } = useSignIn()
+    const { signOut } = useClerk()
     const router = useRouter()
     const { isLoading: authLoading, isAuthenticated } = useAuthGuard()
 
@@ -71,13 +72,36 @@ export default function LoginPage() {
 
             if (result.status === 'complete') {
                 // Login successful, redirect
+                await setActive({ session: result.createdSessionId })
                 router.push('/auth-redirect')
             }
         } catch (err: any) {
             console.error('Login error:', err)
 
             const clerkError = err.errors?.[0]
-            if (clerkError) {
+
+            // Handle "already signed in" error by signing out and retrying
+            if (clerkError?.code === 'identifier_already_signed_in' ||
+                err.message?.includes('already signed in')) {
+                try {
+                    await signOut()
+                    // Wait a moment for cleanup
+                    await new Promise(resolve => setTimeout(resolve, 500))
+                    // Retry login
+                    const retryResult = await signIn.create({
+                        identifier: formData.email,
+                        password: formData.password
+                    })
+                    if (retryResult.status === 'complete') {
+                        await setActive({ session: retryResult.createdSessionId })
+                        router.push('/auth-redirect')
+                        return
+                    }
+                } catch (retryErr: any) {
+                    console.error('Retry login error:', retryErr)
+                    setError(`Retry failed: ${retryErr.message || 'Unknown error'}`)
+                }
+            } else if (clerkError) {
                 switch (clerkError.code) {
                     case 'form_password_incorrect':
                     case 'form_identifier_not_found':
@@ -150,8 +174,9 @@ export default function LoginPage() {
 
                         {/* Error Message */}
                         {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                                {error}
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
+                                <p className="font-bold text-red-700">Error</p>
+                                <p className="text-sm text-red-600">{error}</p>
                             </div>
                         )}
 

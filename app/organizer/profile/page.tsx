@@ -114,7 +114,18 @@ export default function OrganizerProfilePage() {
                                 avatarBox: 'w-10 h-10'
                             }
                         }}
-                    />
+                    >
+                        <UserButton.MenuItems>
+                            <UserButton.Action
+                                label="Sign out"
+                                labelIcon={<span>🚪</span>}
+                                onClick={() => {
+                                    // Force page refresh on sign out
+                                    window.location.href = '/login'
+                                }}
+                            />
+                        </UserButton.MenuItems>
+                    </UserButton>
                 </div>
             </header>
 
