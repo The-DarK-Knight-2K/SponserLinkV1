@@ -1,19 +1,37 @@
-// Path: app/auth-redirect/page.tsx
-
+// app/auth-redirect/page.tsx
 'use client'
 
 import { useUser, useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function AuthRedirectPage() {
     const { user, isLoaded: isUserLoaded } = useUser()
     const { isSignedIn, isLoaded: isAuthLoaded } = useAuth()
     const router = useRouter()
+    const [timeoutReached, setTimeoutReached] = useState(false)
+
+    useEffect(() => {
+        // Set timeout to prevent infinite waiting
+        const timeout = setTimeout(() => {
+            setTimeoutReached(true)
+        }, 5000) // 5 second timeout
+
+        return () => clearTimeout(timeout)
+    }, [])
 
     useEffect(() => {
         // Wait until BOTH auth and user data are loaded
-        if (!isAuthLoaded || !isUserLoaded) return
+        if (!isAuthLoaded || !isUserLoaded) {
+            return
+        }
+
+        // If timeout reached and still no user, redirect to login
+        if (timeoutReached && !user) {
+            console.error('Timeout waiting for user data')
+            router.push('/login')
+            return
+        }
 
         // If not signed in, go to login
         if (!isSignedIn) {
@@ -21,10 +39,11 @@ export default function AuthRedirectPage() {
             return
         }
 
-        // If signed in but user object not available yet, wait
-        // This prevents the loop where isSignedIn is true but user is null
+        // If signed in but no user object yet, wait (unless timeout)
         if (!user) {
-            // Don't redirect to login - we ARE signed in, just waiting for user data
+            if (timeoutReached) {
+                router.push('/login')
+            }
             return
         }
 
@@ -44,7 +63,7 @@ export default function AuthRedirectPage() {
             return
         }
 
-        // Check if profile is complete
+        // Check if profile is complete based on user type
         if (userType === 'organizer') {
             const hasOrganizerProfile =
                 user.unsafeMetadata?.organizationName &&
@@ -70,10 +89,12 @@ export default function AuthRedirectPage() {
 
             // Profile complete, go to sponsor home
             router.push('/sponsor/home')
+        } else {
+            // Unknown user type, go to complete profile
+            router.push('/complete-profile')
         }
-    }, [user, isUserLoaded, isSignedIn, isAuthLoaded, router])
+    }, [user, isUserLoaded, isSignedIn, isAuthLoaded, router, timeoutReached])
 
-    // Show loading while redirecting
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
             <div className="text-center">

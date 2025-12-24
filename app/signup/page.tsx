@@ -1,21 +1,21 @@
-// Path: app/signup/page.tsx
-
+// app/signup/page.tsx
 'use client'
 
-import { useSignUp, useUser, useAuth } from '@clerk/nextjs'
+import { useSignUp } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, Suspense, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import Link from 'next/link'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 function SignUpForm() {
-    const { signUp, isLoaded: isSignUpLoaded } = useSignUp()
-    const { user, isLoaded: isUserLoaded } = useUser()
-    const { isSignedIn, isLoaded: isAuthLoaded } = useAuth()
+    const { signUp, isLoaded } = useSignUp()
     const router = useRouter()
     const searchParams = useSearchParams()
+    const { isLoading: authLoading, isAuthenticated } = useAuthGuard()
+
     const [selectedUserType, setSelectedUserType] = useState<'organizer' | 'sponsor'>(
         (searchParams.get('type') as 'organizer' | 'sponsor') || 'organizer'
     )
@@ -31,10 +31,10 @@ function SignUpForm() {
 
     // Redirect if already signed in
     useEffect(() => {
-        if (isAuthLoaded && isSignedIn) {
+        if (!authLoading && isAuthenticated) {
             router.push('/auth-redirect')
         }
-    }, [isAuthLoaded, isSignedIn, router])
+    }, [authLoading, isAuthenticated, router])
 
     // Update selectedUserType if URL param changes
     useEffect(() => {
@@ -45,7 +45,7 @@ function SignUpForm() {
     }, [searchParams])
 
     // Show loading while checking auth status
-    if (!isAuthLoaded) {
+    if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
                 <div className="text-center">
@@ -57,7 +57,7 @@ function SignUpForm() {
     }
 
     // If already signed in, show redirecting message
-    if (isSignedIn) {
+    if (isAuthenticated) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
                 <div className="text-center">
@@ -88,7 +88,7 @@ function SignUpForm() {
         setErrors({})
         setLoading(true)
 
-        if (!isSignUpLoaded || !signUp) {
+        if (!isLoaded || !signUp) {
             setLoading(false)
             return
         }
@@ -125,9 +125,6 @@ function SignUpForm() {
             const clerkError = err.errors?.[0]
             if (clerkError) {
                 switch (clerkError.code) {
-                    case 'session_exists':
-                        router.push('/auth-redirect')
-                        return
                     case 'form_identifier_exists':
                         setErrors({ email: 'An account with this email already exists' })
                         break
@@ -250,7 +247,7 @@ function SignUpForm() {
                             type="submit"
                             variant="primary"
                             fullWidth
-                            disabled={loading || !isSignUpLoaded}
+                            disabled={loading || !isLoaded}
                         >
                             {loading ? 'Creating account...' : `Sign Up as ${selectedUserType === 'organizer' ? 'Organizer' : 'Sponsor'}`}
                         </Button>

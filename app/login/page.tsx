@@ -1,21 +1,19 @@
-// Path: app/login/page.tsx
-
+// app/login/page.tsx
 'use client'
 
-import { useSignIn, useUser, useAuth, useClerk } from '@clerk/nextjs'
+import { useSignIn } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PasswordInput } from '@/components/ui/PasswordInput'
 import Link from 'next/link'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 export default function LoginPage() {
-    const { signIn, isLoaded: isSignInLoaded } = useSignIn()
-    const { user, isLoaded: isUserLoaded } = useUser()
-    const { isSignedIn, isLoaded: isAuthLoaded } = useAuth()
-    const { signOut } = useClerk()
+    const { signIn, isLoaded } = useSignIn()
     const router = useRouter()
+    const { isLoading: authLoading, isAuthenticated } = useAuthGuard()
 
     const [formData, setFormData] = useState({
         email: '',
@@ -23,10 +21,16 @@ export default function LoginPage() {
     })
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
-    const [sessionCleared, setSessionCleared] = useState(false)
 
-    // Show loading while checking auth status
-    if (!isAuthLoaded) {
+    // Redirect if already authenticated
+    useEffect(() => {
+        if (!authLoading && isAuthenticated) {
+            router.push('/auth-redirect')
+        }
+    }, [authLoading, isAuthenticated, router])
+
+    // Show loading while checking auth
+    if (authLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
                 <div className="text-center">
@@ -37,22 +41,25 @@ export default function LoginPage() {
         )
     }
 
-    // NOTE: We do NOT auto-redirect if isSignedIn is true
-    // This is because isSignedIn can be stale after sign out
-    // The user should be able to log in fresh without being bounced around
+    // If authenticated, show redirecting
+    if (isAuthenticated) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Redirecting...</p>
+                </div>
+            </div>
+        )
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError('')
         setLoading(true)
 
-        if (!isSignInLoaded || !signIn) {
+        if (!isLoaded || !signIn) {
             setLoading(false)
-            return
-        }
-
-        if (isSignedIn) {
-            router.push('/auth-redirect')
             return
         }
 
@@ -67,70 +74,20 @@ export default function LoginPage() {
                 router.push('/auth-redirect')
             }
         } catch (err: any) {
-            // Check for "already signed in" errors FIRST - handle silently
-            const errorMessage = err.message || ''
-            const clerkError = err.errors?.[0]
-            const clerkErrorMessage = clerkError?.message || ''
-            const clerkErrorCode = clerkError?.code || ''
-
-            // If it's a session/signed-in related error, clear the stale session and retry
-            if (
-                errorMessage.toLowerCase().includes('signed in') ||
-                errorMessage.toLowerCase().includes('session') ||
-                clerkErrorMessage.toLowerCase().includes('signed in') ||
-                clerkErrorMessage.toLowerCase().includes('session') ||
-                clerkErrorCode === 'session_exists'
-            ) {
-                // Clear stale session state and retry login automatically
-                try {
-                    await signOut()
-                    // Small delay to let Clerk sync state
-                    await new Promise(resolve => setTimeout(resolve, 500))
-
-                    // Retry the login
-                    const retryResult = await signIn.create({
-                        identifier: formData.email,
-                        password: formData.password
-                    })
-
-                    if (retryResult.status === 'complete') {
-                        router.push('/auth-redirect')
-                        return
-                    }
-                } catch (retryErr: any) {
-                    console.error('Login retry error:', retryErr)
-                    // If retry also fails, show the actual error
-                    const retryClerkError = retryErr.errors?.[0]
-                    if (retryClerkError) {
-                        if (retryClerkError.code === 'form_password_incorrect' ||
-                            retryClerkError.code === 'form_identifier_not_found') {
-                            setError('Incorrect email or password')
-                        } else {
-                            setError(retryClerkError.message || 'Login failed. Please try again.')
-                        }
-                    } else {
-                        setError('Login failed. Please try again.')
-                    }
-                }
-                setLoading(false)
-                return
-            }
-
-            // Only log non-session errors
             console.error('Login error:', err)
 
+            const clerkError = err.errors?.[0]
             if (clerkError) {
-                switch (clerkErrorCode) {
+                switch (clerkError.code) {
                     case 'form_password_incorrect':
                     case 'form_identifier_not_found':
                         setError('Incorrect email or password')
                         break
                     case 'verification_required':
-                        // Email not verified, redirect to verification
                         router.push('/verify-email')
                         return
                     default:
-                        setError(clerkError.message || 'Login failed. Please try again.')
+                        setError('Login failed. Please try again.')
                 }
             } else {
                 setError('Login failed. Please try again.')
@@ -203,7 +160,7 @@ export default function LoginPage() {
                             type="submit"
                             variant="primary"
                             fullWidth
-                            disabled={loading || !isSignInLoaded}
+                            disabled={loading || !isLoaded}
                         >
                             {loading ? 'Logging in...' : 'Log In'}
                         </Button>

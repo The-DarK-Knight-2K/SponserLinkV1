@@ -1,3 +1,4 @@
+// app/complete-profile/page.tsx
 'use client'
 
 import { useUser } from '@clerk/nextjs'
@@ -6,29 +7,36 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 export default function CompleteProfilePage() {
     const { user } = useUser()
     const router = useRouter()
+    const { isLoading: authLoading } = useAuthGuard({
+        requireAuth: true,
+        requireVerified: true,
+        redirectTo: '/login'
+    })
+
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
     const [selectedRole, setSelectedRole] = useState<'organizer' | 'sponsor' | null>(null)
 
-    // Get the user type from unsafeMetadata (set during signup)
-    const userType = user?.unsafeMetadata?.userType as 'organizer' | 'sponsor' | undefined
+    // Get the user type from metadata (set during signup)
+    const existingUserType = user?.unsafeMetadata?.userType as 'organizer' | 'sponsor' | undefined
 
     // Form state for organizer
     const [organizerData, setOrganizerData] = useState({
-        organizationName: '',
-        officialTitle: '',
-        bio: ''
+        organizationName: (user?.unsafeMetadata?.organizationName as string) || '',
+        officialTitle: (user?.unsafeMetadata?.officialTitle as string) || '',
+        bio: (user?.unsafeMetadata?.bio as string) || ''
     })
 
     // Form state for sponsor
     const [sponsorData, setSponsorData] = useState({
-        companyName: '',
-        companyDescription: '',
-        sponsorshipPreferences: ''
+        companyName: (user?.unsafeMetadata?.companyName as string) || '',
+        companyDescription: (user?.unsafeMetadata?.companyDescription as string) || '',
+        sponsorshipPreferences: (user?.unsafeMetadata?.sponsorshipPreferences as string) || ''
     })
 
     // Handle form submission
@@ -37,8 +45,16 @@ export default function CompleteProfilePage() {
         setLoading(true)
         setError('')
 
+        const effectiveUserType = existingUserType || selectedRole
+
+        if (!effectiveUserType) {
+            setError('Please select a role')
+            setLoading(false)
+            return
+        }
+
         try {
-            // Update user's public metadata with completed profile
+            // Update user's metadata with completed profile
             await user?.update({
                 unsafeMetadata: {
                     ...user.unsafeMetadata,
@@ -60,8 +76,8 @@ export default function CompleteProfilePage() {
         }
     }
 
-    // Loading state
-    if (!user) {
+    // Show loading while checking auth
+    if (authLoading || !user) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
@@ -72,11 +88,10 @@ export default function CompleteProfilePage() {
         )
     }
 
-    // If user is loaded but no user type in metadata, let them select it
-    // Don't redirect to signup, as that causes a loop
-    const effectiveUserType = (userType || selectedRole) as 'organizer' | 'sponsor' | undefined
+    // Determine effective user type - prefer existing over selected
+    const effectiveUserType = existingUserType || selectedRole
 
-    // Check if we need to show role selection
+    // If no user type yet, show role selection
     if (!effectiveUserType) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-12 px-4 flex items-center justify-center">

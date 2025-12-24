@@ -1,3 +1,4 @@
+// app/organizer/profile/page.tsx
 'use client'
 
 import { useUser, UserButton } from '@clerk/nextjs'
@@ -5,11 +6,18 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Edit2, Save, X, CheckCircle } from 'lucide-react'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 export default function OrganizerProfilePage() {
     const { user } = useUser()
+    const { isLoading: authLoading } = useAuthGuard({
+        requireAuth: true,
+        requireVerified: true,
+        allowedUserTypes: ['organizer'],
+        redirectTo: '/login'
+    })
 
     // Edit mode state
     const [isEditing, setIsEditing] = useState(false)
@@ -25,7 +33,7 @@ export default function OrganizerProfilePage() {
     })
 
     // Initialize form data when user loads
-    useState(() => {
+    useEffect(() => {
         if (user?.unsafeMetadata) {
             setFormData({
                 organizationName: (user.unsafeMetadata.organizationName as string) || '',
@@ -33,7 +41,7 @@ export default function OrganizerProfilePage() {
                 bio: (user.unsafeMetadata.bio as string) || ''
             })
         }
-    })
+    }, [user])
 
     // Handle form submission
     const handleSave = async () => {
@@ -45,18 +53,15 @@ export default function OrganizerProfilePage() {
             // Update Clerk user metadata
             await user?.update({
                 unsafeMetadata: {
-                    ...user.unsafeMetadata, // Keep existing metadata
+                    ...user.unsafeMetadata,
                     organizationName: formData.organizationName,
                     officialTitle: formData.officialTitle,
                     bio: formData.bio
                 }
             })
 
-            // Show success message
             setSuccess(true)
             setIsEditing(false)
-
-            // Hide success message after 3 seconds
             setTimeout(() => setSuccess(false), 3000)
         } catch (err) {
             console.error('Error updating profile:', err)
@@ -66,7 +71,7 @@ export default function OrganizerProfilePage() {
         }
     }
 
-    // Handle cancel - reset to original values
+    // Handle cancel
     const handleCancel = () => {
         if (user?.unsafeMetadata) {
             setFormData({
@@ -79,8 +84,20 @@ export default function OrganizerProfilePage() {
         setError('')
     }
 
+    // Show loading state
+    if (authLoading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                </div>
+            </div>
+        )
+    }
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 pb-20">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 pb-24">
             {/* Header */}
             <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -103,7 +120,7 @@ export default function OrganizerProfilePage() {
             <main className="max-w-3xl mx-auto px-4 py-8">
                 {/* Success Message */}
                 {success && (
-                    <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
                         <CheckCircle className="w-5 h-5 text-green-600" />
                         <p className="text-green-800 font-medium">Profile updated successfully!</p>
                     </div>
@@ -168,7 +185,6 @@ export default function OrganizerProfilePage() {
                     {/* Profile Content */}
                     <div className="space-y-6">
                         {isEditing ? (
-                            // Edit Mode
                             <>
                                 <Input
                                     label="Organization/Club/Institute Name"
@@ -204,7 +220,6 @@ export default function OrganizerProfilePage() {
                                 />
                             </>
                         ) : (
-                            // View Mode
                             <>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,5 +1,4 @@
-// Path: app/verify-email/page.tsx
-
+// app/verify-email/page.tsx
 'use client'
 
 import { useSignUp, useUser, useClerk } from '@clerk/nextjs'

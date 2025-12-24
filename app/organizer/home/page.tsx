@@ -1,18 +1,38 @@
+// app/organizer/home/page.tsx
 'use client'
 
 import { useUser, UserButton } from '@clerk/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Plus, Search, User } from 'lucide-react'
+import { Plus, Search } from 'lucide-react'
+import { useAuthGuard } from '@/hooks/useAuthGuard'
 
 export default function OrganizerHomePage() {
     const { user } = useUser()
+    const { isLoading } = useAuthGuard({
+        requireAuth: true,
+        requireVerified: true,
+        allowedUserTypes: ['organizer'],
+        redirectTo: '/login'
+    })
 
     // Get organizer info from metadata
     const organizationName = user?.unsafeMetadata?.organizationName as string
     const officialTitle = user?.unsafeMetadata?.officialTitle as string
     const userName = user?.firstName || 'there'
+
+    // Show loading state
+    if (isLoading || !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
@@ -23,7 +43,7 @@ export default function OrganizerHomePage() {
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-lg">SL</span>
                         </div>
-                        <span className="text-xl font-bold text-gray-900">Sponsorlink-org</span>
+                        <span className="text-xl font-bold text-gray-900">Sponsorlink</span>
                     </div>
 
                     {/* User Menu */}
@@ -43,7 +63,7 @@ export default function OrganizerHomePage() {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 py-8">
+            <main className="max-w-7xl mx-auto px-4 py-8 pb-24">
                 {/* Welcome Section */}
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -132,41 +152,6 @@ export default function OrganizerHomePage() {
                     </Card>
                 </section>
             </main>
-
-            {/* Bottom Navigation */}
-            <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg md:hidden">
-                <div className="flex justify-around py-3">
-                    <Link href="/organizer/home" className="flex flex-col items-center gap-1 text-blue-600">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                            </svg>
-                        </div>
-                        <span className="text-xs font-medium">Home</span>
-                    </Link>
-
-                    <Link href="/organizer/project/new" className="flex flex-col items-center gap-1 text-gray-500">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Plus className="w-5 h-5" />
-                        </div>
-                        <span className="text-xs font-medium">Add</span>
-                    </Link>
-
-                    <Link href="/organizer/browse-sponsors" className="flex flex-col items-center gap-1 text-gray-500">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Search className="w-5 h-5" />
-                        </div>
-                        <span className="text-xs font-medium">Browse</span>
-                    </Link>
-
-                    <Link href="/organizer/profile" className="flex flex-col items-center gap-1 text-gray-500">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <User className="w-5 h-5" />
-                        </div>
-                        <span className="text-xs font-medium">Profile</span>
-                    </Link>
-                </div>
-            </nav>
         </div>
     )
 }
