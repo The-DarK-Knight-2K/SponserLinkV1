@@ -1,20 +1,37 @@
+// Path: app/auth-redirect/page.tsx
+
 'use client'
 
-import { useUser } from '@clerk/nextjs'
+import { useUser, useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
 export default function AuthRedirectPage() {
-    const { user, isLoaded } = useUser()
+    const { user, isLoaded: isUserLoaded } = useUser()
+    const { isSignedIn, isLoaded: isAuthLoaded } = useAuth()
     const router = useRouter()
 
     useEffect(() => {
-        // Wait until user data is loaded
-        if (!isLoaded) return
+        // Wait until BOTH auth and user data are loaded
+        if (!isAuthLoaded || !isUserLoaded) return
 
-        // If no user, go to login
-        if (!user) {
+        // If not signed in, go to login
+        if (!isSignedIn) {
             router.push('/login')
+            return
+        }
+
+        // If signed in but user object not available yet, wait
+        // This prevents the loop where isSignedIn is true but user is null
+        if (!user) {
+            // Don't redirect to login - we ARE signed in, just waiting for user data
+            return
+        }
+
+        // Check email verification status
+        const isEmailVerified = user.primaryEmailAddress?.verification?.status === 'verified'
+        if (!isEmailVerified) {
+            router.push('/verify-email')
             return
         }
 
@@ -54,7 +71,7 @@ export default function AuthRedirectPage() {
             // Profile complete, go to sponsor home
             router.push('/sponsor/home')
         }
-    }, [user, isLoaded, router])
+    }, [user, isUserLoaded, isSignedIn, isAuthLoaded, router])
 
     // Show loading while redirecting
     return (
@@ -65,7 +82,7 @@ export default function AuthRedirectPage() {
                     Setting up your account...
                 </p>
                 <p className="mt-2 text-gray-500">
-                    You&apos;ll be redirected shortly
+                    You'll be redirected shortly
                 </p>
             </div>
         </div>

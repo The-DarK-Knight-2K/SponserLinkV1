@@ -12,6 +12,7 @@ export default function CompleteProfilePage() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [selectedRole, setSelectedRole] = useState<'organizer' | 'sponsor' | null>(null)
 
     // Get the user type from unsafeMetadata (set during signup)
     const userType = user?.unsafeMetadata?.userType as 'organizer' | 'sponsor' | undefined
@@ -41,13 +42,13 @@ export default function CompleteProfilePage() {
             await user?.update({
                 unsafeMetadata: {
                     ...user.unsafeMetadata,
-                    userType: userType,
-                    ...(userType === 'organizer' ? organizerData : sponsorData)
+                    userType: effectiveUserType,
+                    ...(effectiveUserType === 'organizer' ? organizerData : sponsorData)
                 }
             })
 
             // Redirect based on user type
-            if (userType === 'organizer') {
+            if (effectiveUserType === 'organizer') {
                 router.push('/organizer/home')
             } else {
                 router.push('/sponsor/home')
@@ -71,10 +72,50 @@ export default function CompleteProfilePage() {
         )
     }
 
-    // If no user type, redirect to signup
-    if (!userType) {
-        router.push('/signup')
-        return null
+    // If user is loaded but no user type in metadata, let them select it
+    // Don't redirect to signup, as that causes a loop
+    const effectiveUserType = (userType || selectedRole) as 'organizer' | 'sponsor' | undefined
+
+    // Check if we need to show role selection
+    if (!effectiveUserType) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-12 px-4 flex items-center justify-center">
+                <div className="max-w-md w-full text-center">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                        Select Your Role
+                    </h1>
+                    <p className="text-gray-600 mb-8">
+                        To complete your profile, please tell us how you plan to use Sponsorlink.
+                    </p>
+
+                    <div className="grid gap-4">
+                        <button
+                            onClick={() => setSelectedRole('organizer')}
+                            className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500 text-left group"
+                        >
+                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 mb-2">
+                                I am an Organizer
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                                I want to list projects and find sponsors for my events.
+                            </p>
+                        </button>
+
+                        <button
+                            onClick={() => setSelectedRole('sponsor')}
+                            className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500 text-left group"
+                        >
+                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 mb-2">
+                                I am a Sponsor
+                            </h3>
+                            <p className="text-gray-600 text-sm">
+                                I want to find and support amazing projects.
+                            </p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -86,7 +127,7 @@ export default function CompleteProfilePage() {
                         Complete Your Profile
                     </h1>
                     <p className="text-gray-600">
-                        {userType === 'organizer'
+                        {effectiveUserType === 'organizer'
                             ? 'Tell us about your organization'
                             : 'Tell us about your company'}
                     </p>
@@ -95,7 +136,7 @@ export default function CompleteProfilePage() {
                 {/* Form */}
                 <div className="bg-white rounded-2xl shadow-xl p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {userType === 'organizer' ? (
+                        {effectiveUserType === 'organizer' ? (
                             <>
                                 {/* Organizer Fields */}
                                 <Input
