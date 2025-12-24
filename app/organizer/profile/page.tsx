@@ -108,6 +108,7 @@ export default function OrganizerProfilePage() {
                         <span className="text-xl font-bold text-gray-900">Profile</span>
                     </div>
                     <UserButton
+                        afterSignOutUrl="/login"
                         appearance={{
                             elements: {
                                 avatarBox: 'w-10 h-10'

@@ -52,6 +52,7 @@ export default function OrganizerHomePage() {
                             {organizationName}
                         </span>
                         <UserButton
+                            afterSignOutUrl="/login"
                             appearance={{
                                 elements: {
                                     avatarBox: 'w-10 h-10'
