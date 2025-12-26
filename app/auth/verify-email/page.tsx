@@ -24,7 +24,7 @@ export default function VerifyEmailPage() {
     // If user is already verified, redirect
     useEffect(() => {
         if (user?.primaryEmailAddress?.verification?.status === 'verified') {
-            router.push('/auth-redirect')
+            router.push('/auth/auth-redirect')
         }
     }, [user, router])
 
@@ -58,7 +58,7 @@ export default function VerifyEmailPage() {
                 setSuccess(true)
                 // Wait a moment to show success, then redirect
                 setTimeout(() => {
-                    router.push('/auth-redirect')
+                    router.push('/auth/auth-redirect')
                 }, 1500)
             }
         } catch (err: any) {

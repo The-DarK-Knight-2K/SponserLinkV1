@@ -32,7 +32,7 @@ function SignUpForm() {
     // Redirect if already signed in
     useEffect(() => {
         if (!authLoading && isAuthenticated) {
-            router.push('/auth-redirect')
+            router.push('/auth/auth-redirect')
         }
     }, [authLoading, isAuthenticated, router])
 
@@ -117,7 +117,7 @@ function SignUpForm() {
             })
 
             // Redirect to verification page
-            router.push('/verify-email')
+            router.push('/auth/verify-email')
         } catch (err: any) {
             console.error('Signup error:', err)
 
@@ -257,7 +257,7 @@ function SignUpForm() {
                 {/* Footer */}
                 <p className="text-center text-sm text-gray-600 mt-6">
                     Already have an account?{' '}
-                    <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/auth/login" className="text-blue-600 hover:text-blue-700 font-medium">
                         Log in
                     </Link>
                 </p>

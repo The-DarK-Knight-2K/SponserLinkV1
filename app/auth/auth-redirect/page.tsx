@@ -29,20 +29,20 @@ export default function AuthRedirectPage() {
         // If timeout reached and still no user, redirect to login
         if (timeoutReached && !user) {
             console.error('Timeout waiting for user data')
-            router.push('/login')
+            router.push('/auth/login')
             return
         }
 
         // If not signed in, go to login
         if (!isSignedIn) {
-            router.push('/login')
+            router.push('/auth/login')
             return
         }
 
         // If signed in but no user object yet, wait (unless timeout)
         if (!user) {
             if (timeoutReached) {
-                router.push('/login')
+                router.push('/auth/login')
             }
             return
         }
@@ -50,7 +50,7 @@ export default function AuthRedirectPage() {
         // Check email verification status
         const isEmailVerified = user.primaryEmailAddress?.verification?.status === 'verified'
         if (!isEmailVerified) {
-            router.push('/verify-email')
+            router.push('/auth/verify-email')
             return
         }
 
@@ -59,7 +59,7 @@ export default function AuthRedirectPage() {
 
         // If no user type set, they need to complete profile
         if (!userType) {
-            router.push('/complete-profile')
+            router.push('/auth/complete-profile')
             return
         }
 
@@ -70,7 +70,7 @@ export default function AuthRedirectPage() {
                 user.unsafeMetadata?.officialTitle
 
             if (!hasOrganizerProfile) {
-                router.push('/complete-profile')
+                router.push('/auth/complete-profile')
                 return
             }
 
@@ -83,7 +83,7 @@ export default function AuthRedirectPage() {
                 user.unsafeMetadata?.sponsorshipPreferences
 
             if (!hasSponsorProfile) {
-                router.push('/complete-profile')
+                router.push('/auth/complete-profile')
                 return
             }
 
@@ -91,7 +91,7 @@ export default function AuthRedirectPage() {
             router.push('/sponsor/home')
         } else {
             // Unknown user type, go to complete profile
-            router.push('/complete-profile')
+            router.push('/auth/complete-profile')
         }
     }, [user, isUserLoaded, isSignedIn, isAuthLoaded, router, timeoutReached])
 

@@ -16,7 +16,7 @@ export default function SponsorProfilePage() {
         requireAuth: true,
         requireVerified: true,
         allowedUserTypes: ['sponsor'],
-        redirectTo: '/login'
+        redirectTo: '/auth/login'
     })
 
     // Edit mode state
@@ -115,7 +115,7 @@ export default function SponsorProfilePage() {
                         <span className="text-xl font-bold text-gray-900">Profile</span>
                     </div>
                     <UserButton
-                        afterSignOutUrl="/login"
+                        afterSignOutUrl="/auth/login"
                         appearance={{
                             elements: {
                                 avatarBox: 'w-10 h-10'

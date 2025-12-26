@@ -26,7 +26,7 @@ export default function LoginPage() {
     // Redirect if already authenticated
     useEffect(() => {
         if (!authLoading && isAuthenticated) {
-            router.push('/auth-redirect')
+            router.push('/auth/auth-redirect')
         }
     }, [authLoading, isAuthenticated, router])
 
@@ -73,7 +73,7 @@ export default function LoginPage() {
             if (result.status === 'complete') {
                 // Login successful, redirect
                 await setActive({ session: result.createdSessionId })
-                router.push('/auth-redirect')
+                router.push('/auth/auth-redirect')
             }
         } catch (err: any) {
             console.error('Login error:', err)
@@ -94,7 +94,7 @@ export default function LoginPage() {
                     })
                     if (retryResult.status === 'complete') {
                         await setActive({ session: retryResult.createdSessionId })
-                        router.push('/auth-redirect')
+                        router.push('/auth/auth-redirect')
                         return
                     }
                 } catch (retryErr: any) {
@@ -108,7 +108,7 @@ export default function LoginPage() {
                         setError('Incorrect email or password')
                         break
                     case 'verification_required':
-                        router.push('/verify-email')
+                        router.push('/auth/verify-email')
                         return
                     default:
                         setError('Login failed. Please try again.')
@@ -165,7 +165,7 @@ export default function LoginPage() {
                         {/* Forgot Password Link */}
                         <div className="text-right">
                             <Link
-                                href="/forgot-password"
+                                href="/auth/forgot-password"
                                 className="text-sm text-blue-600 hover:text-blue-700 font-medium"
                             >
                                 Forgot password?
@@ -195,7 +195,7 @@ export default function LoginPage() {
                 {/* Footer */}
                 <p className="text-center text-sm text-gray-600 mt-6">
                     Don't have an account?{' '}
-                    <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+                    <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-medium">
                         Sign up
                     </Link>
                 </p>

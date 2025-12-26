@@ -33,7 +33,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
 
         // If auth is required but user is not signed in
         if (requireAuth && !isSignedIn) {
-            router.push(redirectTo || '/login')
+            router.push(redirectTo || '/auth/login')
             return
         }
 
@@ -47,7 +47,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
         if (requireVerified && user) {
             const isVerified = user.primaryEmailAddress?.verification?.status === 'verified'
             if (!isVerified) {
-                router.push('/verify-email')
+                router.push('/auth/verify-email')
                 return
             }
         }
@@ -56,7 +56,7 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
         if (allowedUserTypes && user) {
             const userType = user.unsafeMetadata?.userType as string
             if (!userType || !allowedUserTypes.includes(userType as any)) {
-                router.push('/complete-profile')
+                router.push('/auth/complete-profile')
                 return
             }
         }

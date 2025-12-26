@@ -15,7 +15,7 @@ export default function CompleteProfilePage() {
     const { isLoading: authLoading } = useAuthGuard({
         requireAuth: true,
         requireVerified: true,
-        redirectTo: '/login'
+        redirectTo: '/auth/login'
     })
 
     const [loading, setLoading] = useState(false)

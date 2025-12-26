@@ -9,8 +9,8 @@ const isProtectedRoute = createRouteMatcher([
 
 // Define auth pages that signed-in users shouldn't access
 const isAuthPage = createRouteMatcher([
-    '/login',
-    '/signup',
+    '/auth/login',
+    '/auth/signup',
 ])
 
 export default clerkMiddleware(async (auth, req) => {
@@ -19,7 +19,7 @@ export default clerkMiddleware(async (auth, req) => {
     // If user is signed in and trying to access login/signup, redirect to app
     // This prevents the "already signed in" error from stale sessions
     if (userId && isAuthPage(req)) {
-        const redirectUrl = new URL('/auth-redirect', req.url)
+        const redirectUrl = new URL('/auth/auth-redirect', req.url)
         return NextResponse.redirect(redirectUrl)
     }
 

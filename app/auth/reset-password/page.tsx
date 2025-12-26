@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
             setEmail(storedEmail)
         } else {
             // If no email stored, redirect to forgot password
-            router.push('/forgot-password')
+            router.push('/auth/forgot-password')
         }
     }, [router])
 
@@ -67,7 +67,7 @@ export default function ResetPasswordPage() {
 
                 // Wait a moment to show success, then redirect
                 setTimeout(() => {
-                    router.push('/auth-redirect')
+                    router.push('/auth/auth-redirect')
                 }, 1500)
             }
         } catch (err: any) {

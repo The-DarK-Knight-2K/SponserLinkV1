@@ -22,7 +22,7 @@ function SigninCard({ person, pitch, href }: SigninCardProps) {
             Sign up
           </Button>
         </Link>
-        <Link href="/login" className="w-full max-w-xs">
+        <Link href="/auth/login" className="w-full max-w-xs">
           <Button variant="secondary" fullWidth>
             Log in
           </Button>
@@ -130,12 +130,12 @@ Log in and make it happen.`
           <SigninCard
             person="I am a Sponsor"
             pitch={sponsorpitch}
-            href="/signup?type=sponsor"
+            href="/auth/signup?type=sponsor"
           />
           <SigninCard
             person="I am an Organizer"
             pitch={organizerpitch}
-            href="/signup?type=organizer"
+            href="/auth/signup?type=organizer"
           />
         </section>
 

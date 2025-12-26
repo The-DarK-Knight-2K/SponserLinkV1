@@ -14,7 +14,7 @@ export default function OrganizerHomePage() {
         requireAuth: true,
         requireVerified: true,
         allowedUserTypes: ['organizer'],
-        redirectTo: '/login'
+        redirectTo: '/auth/login'
     })
 
     // Get organizer info from metadata
@@ -43,7 +43,7 @@ export default function OrganizerHomePage() {
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-lg">SL</span>
                         </div>
-                        <span className="text-xl font-bold text-gray-900">Sponsorlink</span>
+                        <span className="text-xl font-bold text-gray-900">Sponsorlink-o</span>
                     </div>
 
                     {/* User Menu */}
@@ -52,7 +52,7 @@ export default function OrganizerHomePage() {
                             {organizationName}
                         </span>
                         <UserButton
-                            afterSignOutUrl="/login"
+                            afterSignOutUrl="/auth/login"
                             appearance={{
                                 elements: {
                                     avatarBox: 'w-10 h-10'

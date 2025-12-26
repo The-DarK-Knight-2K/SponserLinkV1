@@ -36,7 +36,7 @@ export default function ForgotPasswordPage() {
 
             // Store email for next page
             sessionStorage.setItem('resetEmail', email)
-            router.push('/reset-password')
+            router.push('/auth/reset-password')
         } catch (err: any) {
             console.error('Forgot password error:', err)
             const clerkError = err.errors?.[0]
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
             <div className="w-full max-w-md">
                 {/* Back Link */}
                 <Link
-                    href="/login"
+                    href="/auth/login"
                     className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
                 >
                     <ArrowLeft className="w-4 h-4 mr-2" />

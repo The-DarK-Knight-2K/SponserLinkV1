@@ -14,7 +14,7 @@ export default function SponsorHomePage() {
         requireAuth: true,
         requireVerified: true,
         allowedUserTypes: ['sponsor'],
-        redirectTo: '/login'
+        redirectTo: '/auth/login'
     })
 
     // Get sponsor info from metadata
@@ -42,7 +42,7 @@ export default function SponsorHomePage() {
                         <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-lg flex items-center justify-center">
                             <span className="text-white font-bold text-lg">SL</span>
                         </div>
-                        <span className="text-xl font-bold text-gray-900">Sponsorlink</span>
+                        <span className="text-xl font-bold text-gray-900">Sponsorlink-s</span>
                     </div>
 
                     {/* User Menu */}
@@ -51,7 +51,7 @@ export default function SponsorHomePage() {
                             {companyName}
                         </span>
                         <UserButton
-                            afterSignOutUrl="/login"
+                            afterSignOutUrl="/auth/login"
                             appearance={{
                                 elements: {
                                     avatarBox: 'w-10 h-10'

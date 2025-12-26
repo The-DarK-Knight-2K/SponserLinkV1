@@ -16,7 +16,7 @@ export default function OrganizerProfilePage() {
         requireAuth: true,
         requireVerified: true,
         allowedUserTypes: ['organizer'],
-        redirectTo: '/login'
+        redirectTo: '/auth/login'
     })
 
     // Edit mode state
@@ -108,7 +108,7 @@ export default function OrganizerProfilePage() {
                         <span className="text-xl font-bold text-gray-900">Profile</span>
                     </div>
                     <UserButton
-                        afterSignOutUrl="/login"
+                        afterSignOutUrl="/auth/login"
                         appearance={{
                             elements: {
                                 avatarBox: 'w-10 h-10'
@@ -121,7 +121,7 @@ export default function OrganizerProfilePage() {
                                 labelIcon={<span>🚪</span>}
                                 onClick={() => {
                                     // Force page refresh on sign out
-                                    window.location.href = '/login'
+                                    window.location.href = '/auth/login'
                                 }}
                             />
                         </UserButton.MenuItems>
