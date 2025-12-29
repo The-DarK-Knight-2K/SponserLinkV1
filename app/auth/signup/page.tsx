@@ -10,6 +10,10 @@ import { PasswordInput } from '@/components/ui/PasswordInput'
 import Link from 'next/link'
 import { useAuthGuard } from '@/hooks/useAuthGuard'
 
+const getValidUserType = (type: string | null): 'organizer' | 'sponsor' => {
+    return type === 'sponsor' ? 'sponsor' : 'organizer'
+}
+
 function SignUpForm() {
     const { signUp, isLoaded } = useSignUp()
     const router = useRouter()
@@ -17,7 +21,7 @@ function SignUpForm() {
     const { isLoading: authLoading, isAuthenticated } = useAuthGuard()
 
     const [selectedUserType, setSelectedUserType] = useState<'organizer' | 'sponsor'>(
-        (searchParams.get('type') as 'organizer' | 'sponsor') || 'organizer'
+        getValidUserType(searchParams.get('type'))
     )
 
     const [formData, setFormData] = useState({
@@ -38,10 +42,7 @@ function SignUpForm() {
 
     // Update selectedUserType if URL param changes
     useEffect(() => {
-        const typeParam = searchParams.get('type') as 'organizer' | 'sponsor' | null
-        if (typeParam) {
-            setSelectedUserType(typeParam)
-        }
+        setSelectedUserType(getValidUserType(searchParams.get('type')))
     }, [searchParams])
 
     // Show loading while checking auth status
