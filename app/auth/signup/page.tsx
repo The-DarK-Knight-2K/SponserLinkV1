@@ -91,6 +91,7 @@ function SignUpForm() {
 
         if (!isLoaded || !signUp) {
             setLoading(false)
+            setErrors({ general: 'Authentication system is loading. Please wait a moment and try again.' })
             return
         }
 
