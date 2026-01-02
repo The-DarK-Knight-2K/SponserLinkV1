@@ -55,10 +55,27 @@ export function useAuthGuard(options: AuthGuardOptions = {}) {
         // Check user type if specified
         if (allowedUserTypes && user) {
             const userType = user.unsafeMetadata?.userType as string
-            if (!userType || !allowedUserTypes.includes(userType as any)) {
-                router.push('/auth/complete-profile')
+
+            // Scenario A: User has NO type (data corruption)
+            if (!userType) {
+                router.push('/auth/account-error')
                 return
             }
+
+            // Scenario B: User has WRONG type (mismatch)
+            if (!allowedUserTypes.includes(userType as any)) {
+                // Smart redirect based on actual type
+                if (userType === 'organizer') {
+                    router.push('/organizer/home')
+                } else if (userType === 'sponsor') {
+                    router.push('/sponsor/home')
+                } else {
+                    // Unknown/invalid type that isn't null/undefined
+                    router.push('/auth/account-error')
+                }
+                return
+            }
+            // Scenario C: User has CORRECT type - continue (fall through to setIsChecking(false))
         }
 
         // All checks passed

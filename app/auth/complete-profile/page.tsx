@@ -20,7 +20,7 @@ export default function CompleteProfilePage() {
 
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const [selectedRole, setSelectedRole] = useState<'organizer' | 'sponsor' | null>(null)
+    // removed selectedRole state as it is no longer used
 
     // Get the user type from metadata (set during signup)
     const existingUserType = user?.unsafeMetadata?.userType as 'organizer' | 'sponsor' | undefined
@@ -45,7 +45,7 @@ export default function CompleteProfilePage() {
         setLoading(true)
         setError('')
 
-        const effectiveUserType = existingUserType || selectedRole
+        const effectiveUserType = existingUserType
 
         if (!effectiveUserType) {
             setError('Please select a role')
@@ -88,49 +88,18 @@ export default function CompleteProfilePage() {
         )
     }
 
-    // Determine effective user type - prefer existing over selected
-    const effectiveUserType = existingUserType || selectedRole
+    // Determine effective user type
+    const effectiveUserType = existingUserType
 
-    // If no user type yet, show role selection
+    // If no user type yet, this is an error state - redirect to account error
     if (!effectiveUserType) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 py-12 px-4 flex items-center justify-center">
-                <div className="max-w-md w-full text-center">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                        Select Your Role
-                    </h1>
-                    <p className="text-gray-600 mb-8">
-                        To complete your profile, please tell us how you plan to use Sponsorlink.
-                    </p>
-
-                    <div className="grid gap-4">
-                        <button
-                            onClick={() => setSelectedRole('organizer')}
-                            className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500 text-left group"
-                        >
-                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 mb-2">
-                                I am an Organizer
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                                I want to list projects and find sponsors for my events.
-                            </p>
-                        </button>
-
-                        <button
-                            onClick={() => setSelectedRole('sponsor')}
-                            className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-all border-2 border-transparent hover:border-blue-500 text-left group"
-                        >
-                            <h3 className="font-bold text-lg text-gray-900 group-hover:text-blue-600 mb-2">
-                                I am a Sponsor
-                            </h3>
-                            <p className="text-gray-600 text-sm">
-                                I want to find and support amazing projects.
-                            </p>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )
+        // We need to wait for router to be ready/user to be loaded before redirecting
+        // but since we check 'user' existence above, we can just return null and redirect
+        // However, useAuthGuard might already be redirecting, so we can just show loading or error
+        if (typeof window !== 'undefined') {
+            router.push('/auth/account-error')
+        }
+        return null
     }
 
     return (

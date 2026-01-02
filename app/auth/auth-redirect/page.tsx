@@ -57,9 +57,9 @@ export default function AuthRedirectPage() {
         // Get user type from metadata
         const userType = user.unsafeMetadata?.userType as 'organizer' | 'sponsor' | undefined
 
-        // If no user type set, they need to complete profile
+        // If no user type set, something is wrong with the account creation flow (corruption)
         if (!userType) {
-            router.push('/auth/complete-profile')
+            router.push('/auth/account-error')
             return
         }
 
